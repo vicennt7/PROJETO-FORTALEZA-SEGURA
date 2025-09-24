@@ -2,19 +2,29 @@
 
 import os
 from sqlalchemy import create_engine
-# ALTERADO: Importando a ferramenta nova e mais específica
-from sqlalchemy.orm import sessionmaker, declarative_base 
+from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
 
-# String de Conexão com o Banco de Dados
-SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
-if not SQLALCHEMY_DATABASE_URL:
-    SQLALCHEMY_DATABASE_URL = "postgresql://postgres:*A159357o@localhost:5432/postgres"
+# Passo 1: Carrega as variáveis do arquivo .env para o ambiente do sistema
+load_dotenv()
 
-# O "Motor" do Banco de Dados
+# --- SEÇÃO DE SEGURANÇA ---
+# Passo 2: Busca as credenciais de forma segura a partir das variáveis de ambiente
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+
+# Validação para garantir que as variáveis foram carregadas com sucesso
+if not all([DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME]):
+    raise ValueError("ERRO CRÍTICO: Uma ou mais variáveis de ambiente do banco de dados não foram definidas no arquivo .env. O programa será encerrado.")
+
+# Passo 3: Monta a string de conexão usando as variáveis seguras
+SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# --- FIM DA SEÇÃO DE SEGURANÇA ---
+
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-# A "Agência" de Sessões
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# ALTERADO: Usando a "Planta Mestra" com o novo nome recomendado
 Base = declarative_base()

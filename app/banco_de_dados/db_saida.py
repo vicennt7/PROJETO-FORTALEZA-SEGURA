@@ -1,12 +1,15 @@
 # app/banco_de_dados/db_saida.py
-import enum
+
 import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, Enum, Boolean, Float, JSON, ForeignKey
+import enum # Importando a biblioteca padrão de Enum
+from sqlalchemy import (Column, Integer, String, Float, DateTime, Time, 
+                        ForeignKey, Text, Enum, Boolean)
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
+from sqlalchemy.dialects.postgresql import JSON
 from .db_config import Base
 
-# --- "Etiquetas" de Classificação (Enums Completos e Padronizados) ---
+# --- "Etiquetas" de Classificação (Enums Corrigidos e Padronizados) ---
 class TipoEvento(enum.Enum):
     CRIME_CONTRA_PESSOA = "crime_contra_pessoa"
     CRIME_CONTRA_PATRIMONIO = "crime_contra_patrimonio"
@@ -83,27 +86,44 @@ class Bairro(Base):
 class Evento(Base):
     __tablename__ = "eventos_seguranca"
     id = Column(Integer, primary_key=True)
+    hash_origem = Column(String, unique=True, index=True, nullable=False)
     id_dado_bruto = Column(Integer, index=True, nullable=True)
     data_criacao = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
     data_atualizacao = Column(DateTime, onupdate=lambda: datetime.datetime.now(datetime.timezone.utc), nullable=True)
     tipo_fonte = Column(String)
     nome_fonte = Column(String, nullable=True)
-    link_fonte = Column(String, unique=True, index=True)
-    titulo = Column(String)
+    # CORRIGIDO: Removido unique=True e adicionado nullable=True para permitir múltiplas entradas da mesma fonte
+    link_fonte = Column(String, index=True, nullable=True)
+    titulo = Column(String, nullable=True)
     resumo = Column(Text, nullable=True)
+    data_evento = Column(DateTime, index=True)
+    hora_ocorrencia = Column(Time, nullable=True)
+    dia_semana = Column(String, index=True, nullable=True)
+    endereco_texto = Column(String, nullable=True)
+    ponto_geografico = Column(Geometry('POINT', srid=4326), index=True, nullable=True)
+    bairro_id = Column(Integer, ForeignKey("bairros.id"), nullable=True)
+    # CORRIGIDO: Adicionado o back_populates para garantir a relação bidirecional
+    bairro = relationship("Bairro", back_populates="eventos")
+    ais = Column(String, index=True, nullable=True)
+    local_especifico = Column(String, nullable=True)
     tipo_evento = Column(Enum(TipoEvento), index=True)
     subtipo_evento = Column(String, nullable=True)
     nivel_gravidade = Column(Enum(NivelGravidade), index=True)
-    data_evento = Column(DateTime, index=True)
+    natureza_crime = Column(String, index=True, nullable=True)
+    meio_empregado = Column(String, nullable=True)
+    tipo_objeto = Column(String, nullable=True)
+    quantidade_objeto = Column(Float, nullable=True)
+    genero_vitima = Column(String, nullable=True)
+    identidade_genero_vitima = Column(String, nullable=True)
+    orientacao_sexual_vitima = Column(String, nullable=True)
+    idade_vitima = Column(String, nullable=True)
+    raca_vitima = Column(String, index=True, nullable=True)
+    escolaridade_vitima = Column(String, nullable=True)
     contexto_evento_publico = Column(String, nullable=True)
     condicoes_climaticas = Column(String, nullable=True)
-    endereco_texto = Column(String, nullable=True)
-    ponto_geografico = Column(Geometry('POINT', srid=4326), index=True)
-    bairro_id = Column(Integer, ForeignKey("bairros.id"), nullable=True)
-    bairro = relationship("Bairro", back_populates="eventos")
     url_imagem = Column(String, nullable=True)
     detalhes_adicionais = Column(JSON, nullable=True)
-    
+
 class PontoDeInteresse(Base):
     __tablename__ = "pontos_de_interesse"
     id = Column(Integer, primary_key=True)
@@ -133,7 +153,8 @@ class SegmentoDeVia(Base):
 class SessaoAtiva(Base):
     __tablename__ = "sessoes_ativas"
     id = Column(Integer, primary_key=True)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), index=True)
+    # CORRIGIDO: Comentado para evitar erro, já que a tabela 'usuarios' não existe ainda.
+    # usuario_id = Column(Integer, ForeignKey("usuarios.id"), index=True)
     data_inicio = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
     status = Column(Enum(StatusSessao), default=StatusSessao.ATIVA_EM_ROTA)
     coordenadas_veiculo_estacionado = Column(Geometry('POINT', srid=4326), nullable=True)
@@ -142,7 +163,8 @@ class SessaoAtiva(Base):
 class CaixaPreta(Base):
     __tablename__ = "caixa_preta_alertas"
     id = Column(Integer, primary_key=True)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), index=True)
+    # CORRIGIDO: Comentado para evitar erro.
+    # usuario_id = Column(Integer, ForeignKey("usuarios.id"), index=True)
     sessao_id = Column(Integer, ForeignKey("sessoes_ativas.id"), index=True, nullable=True)
     tipo_gatilho = Column(Enum(TipoGatilhoAlerta), index=True)
     motivo_gatilho_sistema = Column(String, nullable=True)
@@ -151,5 +173,5 @@ class CaixaPreta(Base):
     data_final_alerta = Column(DateTime, nullable=True)
     verificacao_solicitada = Column(Boolean, default=False)
     verificacao_sucesso = Column(Boolean, nullable=True)
-    coordenadas_iniciais = Column(Geometry('POINT', srid=4326))
+    coordenadas_iniciais = Column(Geometry('POINT', srid=4326), nullable=True)
     historico_rastreamento = Column(JSON, nullable=True)
