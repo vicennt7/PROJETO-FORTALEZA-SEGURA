@@ -41,7 +41,7 @@ class TipoPontoInteresse(enum.Enum):
 
 class StatusSessao(enum.Enum):
     ATIVA_EM_ROTA = "ativa_em_rota"
-    ALERTA_PANICO = "alerta_panico"
+    ALERTA_ATIVO = "alerta_ativo"
     FINALIZADA = "finalizada"
     CANCELADA_USUARIO = "cancelada_pelo_usuario"
 
@@ -53,7 +53,7 @@ class StatusAlerta(enum.Enum):
     VERIFICACAO_PENDENTE = "verificacao_pendente"
     RASTREAMENTO_ATIVO = "rastreamento_ativo"
     CANCELADO_USUARIO = "cancelado_usuario"
-    FINALIZADO_AUTORIDADES_ACIONADAS = "finalizado_autoridades_acionadas"
+    FINALIZADO = "finalizado"
 
 class NivelFluxo(enum.Enum):
     INEXISTENTE = "inexistente"
@@ -84,6 +84,10 @@ class Evento(Base):
     __tablename__ = "eventos_seguranca"
     id = Column(Integer, primary_key=True)
     id_dado_bruto = Column(Integer, index=True, nullable=True)
+    data_criacao = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    data_atualizacao = Column(DateTime, onupdate=lambda: datetime.datetime.now(datetime.timezone.utc), nullable=True)
+    tipo_fonte = Column(String)
+    nome_fonte = Column(String, nullable=True)
     link_fonte = Column(String, unique=True, index=True)
     titulo = Column(String)
     resumo = Column(Text, nullable=True)
@@ -91,10 +95,15 @@ class Evento(Base):
     subtipo_evento = Column(String, nullable=True)
     nivel_gravidade = Column(Enum(NivelGravidade), index=True)
     data_evento = Column(DateTime, index=True)
+    contexto_evento_publico = Column(String, nullable=True)
+    condicoes_climaticas = Column(String, nullable=True)
+    endereco_texto = Column(String, nullable=True)
     ponto_geografico = Column(Geometry('POINT', srid=4326), index=True)
     bairro_id = Column(Integer, ForeignKey("bairros.id"), nullable=True)
     bairro = relationship("Bairro", back_populates="eventos")
-
+    url_imagem = Column(String, nullable=True)
+    detalhes_adicionais = Column(JSON, nullable=True)
+    
 class PontoDeInteresse(Base):
     __tablename__ = "pontos_de_interesse"
     id = Column(Integer, primary_key=True)
