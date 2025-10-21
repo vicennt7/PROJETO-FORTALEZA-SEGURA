@@ -1,16 +1,22 @@
-# Este arquivo diz ao Git para ignorar arquivos e pastas específicos.
+# Arquivos de dados gerados
+*.json
+*.jsonl
 
-# Ignorar as senhas
-.env
+# Arquivos de texto e logs
+*.txt
+*.log
 
-# Ignorar o ambiente virtual do Python
-.venv/
-venv/
+# Imagens e screenshots de depuração
+*.png
+*.jpg
+*.jpeg
 
-# Ignorar as pastas de cache do Python
+# Diretórios de ambiente Python
 __pycache__/
-*.pyc
+venv/
+*.venv/
+env/
 
-# Outros arquivos de configuração de IDEs que podem conter informações locais
+# Arquivos de configuração de IDE
 .vscode/
 .idea/
