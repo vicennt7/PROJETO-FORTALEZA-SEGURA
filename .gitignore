@@ -4,6 +4,7 @@
 
 # Arquivos de texto e logs
 *.txt
+!requirements.txt
 *.log
 
 # Imagens e screenshots de depuração
