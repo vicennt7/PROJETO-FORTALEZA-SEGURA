@@ -56,7 +56,7 @@ def encontrar_links_de_arquivos(urls):
     print("--- FASE 1: Buscando links de TODOS os arquivos de dados ---")
     links_encontrados = set()
     for url_da_pagina in urls:
-        print(f"🔎 Investigando: {url_da_pagina}")
+        print(f" Investigando: {url_da_pagina}")
         try:
             resposta = requests.get(url_da_pagina, headers=HEADERS, timeout=30)
             resposta.raise_for_status()
@@ -67,9 +67,9 @@ def encontrar_links_de_arquivos(urls):
                     link_completo = urljoin(url_da_pagina, tag_a['href'])
                     links_encontrados.add(link_completo)
         except requests.exceptions.RequestException as e:
-            print(f"  ❌ Falha ao investigar a página: {e}")
-    if links_encontrados: print(f"✅ Total de {len(links_encontrados)} links de arquivos encontrados.")
-    else: print("⚠️ Nenhum link de arquivo encontrado.")
+            print(f"Falha ao investigar a página: {e}")
+    if links_encontrados: print(f"Total de {len(links_encontrados)} links de arquivos encontrados.")
+    else: print("Nenhum link de arquivo encontrado.")
     return list(links_encontrados)
 
 def baixar_e_validar_arquivos(lista_de_links):
@@ -104,11 +104,11 @@ def baixar_e_validar_arquivos(lista_de_links):
                 arquivos_para_processar.append(caminho_arquivo_final)
 
         except requests.exceptions.RequestException as e:
-            print(f"     ❌ Falha no download de '{nome_base_arquivo}': {e}")
+            print(f"Falha no download de '{nome_base_arquivo}': {e}")
             if os.path.exists(caminho_arquivo_temp): os.remove(caminho_arquivo_temp)
     
     salvar_manifesto(manifesto)
-    print(f"✅ Verificação de downloads concluída. {len(arquivos_para_processar)} arquivos precisam ser processados.")
+    print(f"Verificação de downloads concluída. {len(arquivos_para_processar)} arquivos precisam ser processados.")
     return arquivos_para_processar
 
 # --- Funções de Processamento (Inteligência de Dados) ---
@@ -202,7 +202,7 @@ def processar_planilha(caminho_arquivo, db):
         print(f"  -> Processamento da planilha concluído. {eventos_novos} novos eventos salvos, {eventos_ignorados} duplicados ignorados.")
     except Exception as e:
         db.rollback()
-        print(f"    ❌ Erro ao ler ou processar a planilha: {e}")
+        print(f"Erro ao ler ou processar a planilha: {e}")
 
 def processar_pdf(caminho_arquivo, db):
     print(f"\n[Analisando PDF]: {os.path.basename(caminho_arquivo)}")
@@ -226,7 +226,7 @@ def processar_arquivos_baixados(lista_de_arquivos):
                 processar_pdf(caminho_arquivo, db)
     finally:
         if 'db' in locals() and db.is_active: db.close()
-    print("\n✅ Processamento inteligente concluído.")
+    print("\nProcessamento inteligente concluído.")
 
 if __name__ == "__main__":
     links = encontrar_links_de_arquivos(URL_ALVOS)
